@@ -37,17 +37,6 @@ class FCS:
       if self._supplementary_text:
          raise ValueError('Supplementary text is present but still needs to be impelemented')
    @property
-   def parameters(self):
-      arr = self.text.keys()
-      print(arr)
-      prog = re.compile('\$P(\d+)([^\d]+)$')
-      present = [(int(y.group(1)),y.group(2)) for y in [prog.match(x) for x in arr] if y]
-      d = {}
-      for p in present:
-         if p[0] not in d: d[p[0]] ={}
-         d[p[0]][p[1]] = self.text['$P'+str(p[0])+p[1]]
-      return d
-   @property
    def header(self):
       return self._header
    @property

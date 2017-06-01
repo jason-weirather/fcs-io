@@ -1,6 +1,7 @@
-import re, sys
+import re, sys, json
 from io import BytesIO
 from collections import namedtuple
+from fcsio.parameter import Parameter
 
 _required_keywords = {
    '$BEGINANALYSIS':'Byte-offset to the beginning of the ANALYSIS segment.',
@@ -179,8 +180,6 @@ class Text(KeyWordDict):
 
    def __setitem__(self,key,value):
       super().__setitem__(key,value)
-      sys.stderr.write("Now we need to update the data since we altered the data\n")
-      self.update_data()
 
    @property
    def bytes(self):
@@ -235,3 +234,7 @@ class Text(KeyWordDict):
            set(self.get_optional_keys().values())
       return list(set(s2)-set(s1))
 
+   @property
+   def parameters(self):
+      n = int(self['$PAR'])
+      return [Parameter(x,self) for x in range(1,n+1)]
