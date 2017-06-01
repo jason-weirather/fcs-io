@@ -33,6 +33,7 @@ class FCS:
       """header will need to be reconstructed"""
       if fcs:
          """ Set the FCS file according to another FCS file """
+         """ We may want to ignore the user defined segment for speed reasons"""
          if self._user_defined_segment:
             self._user_defined_segment = fcs.user_defined_segment[:]
          self._text = Text(fcs.text.bytes)
