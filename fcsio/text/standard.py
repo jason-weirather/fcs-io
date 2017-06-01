@@ -23,11 +23,11 @@ class Standard:
 
    """Byte-offset to the beginning of the TEXT segment"""
    @property
-   def BEGINTEXT(self):
-      return int(self._text['$BEGINTEXT'])
-   @BEGINTEXT.setter
-   def BEGINTEXT(self,val):
-      self._text['$BEGINTEXT'] = int(val)
+   def BEGINSTEXT(self):
+      return int(self._text['$BEGINSTEXT'])
+   @BEGINSTEXT.setter
+   def BEGINSTEXT(self,val):
+      self._text['$BEGINSTEXT'] = int(val)
 
    """Byte order for data acquisition computer"""
    @property
@@ -70,11 +70,11 @@ class Standard:
 
    """Byte-offset to the end of the TEXT segment"""
    @property
-   def ENDTEXT(self):
-      return int(self._text['$ENDTEXT'])
-   @ENDTEXT.setter
-   def ENDTEXT(self,val):
-      self._text['$ENDTEXT'] = int(val)
+   def ENDSTEXT(self):
+      return int(self._text['$ENDSTEXT'])
+   @ENDSTEXT.setter
+   def ENDSTEXT(self,val):
+      self._text['$ENDSTEXT'] = int(val)
 
    """Data mode. Everything except list is deprecated"""
    @property
@@ -96,10 +96,10 @@ class Standard:
    """Number of parameters in an event"""
    @property
    def PAR(self):
-      return int(self._text['$PAR'])
+      return len(self._text.parameter_data.keys())
    @PAR.setter
    def PAR(self,val):
-      raise ValueError('modify PAR by changing paramaters property')
+      raise ValueError('modify PAR by changing paramaters')
 
    """Total number of events in the dataset"""
    @property
@@ -107,5 +107,4 @@ class Standard:
       return int(self._text['$TOT'])
    @TOT.setter
    def TOT(self,val):
-      raise ValueError('modify TOT by changing data')
-
+      raise ValueError('modify TOT by changing data property')

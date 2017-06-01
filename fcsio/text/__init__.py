@@ -2,7 +2,6 @@ import re, sys, json
 from io import BytesIO
 from collections import namedtuple
 from fcsio.text.parameters import Parameter
-from fcsio.text.standard import Standard
 
 _required_keywords = {
    '$BEGINANALYSIS':'Byte-offset to the beginning of the ANALYSIS segment.',
@@ -97,15 +96,20 @@ class KeyWordDict:
    1. Preserves the original keywords
    2. Provides case-INSENSITIVE access to keywords as per the spec
    3. Does not allow empty strings as keywords or values
+
+   Since keywords are case inssensitive, take them to uppercase,
+
    """
    def __init__(self,kvs=[]):
        self._d = {} # dictionary keyed uppercase
-       self._l = [] # list of original values in the order we recieve them
+       self._l = [] # list of non-parameter original values in the order we recieve them
+       self._p = {} # parameter data keyed by index then generic keyword
        self._uc_to_orig = {} #dictionary to convert upper case and original key format
        """Optionally initialize with an interable list of key-value pairs"""
        for kv in kvs:
           self._do_set(kv[0],kv[1])
-
+   @property
+   def parameter_data(self): return self._p
    def keys(self): return self._l
    def __iter__(self):
       for k in self.keys(): yield k
@@ -128,16 +132,29 @@ class KeyWordDict:
       self._do_set(key,value)
 
    def _do_set(self,key,value):
+       prog = re.compile('^(\$[PG])(\d+)([^\d]+)$',re.IGNORECASE)
        #print('set item '+key+' '+str(value))
        uc = key.upper()
-       if uc not in self._d:
-          self._l.append(key)
+       temp_param = {}
+       m = prog.match(uc)
+       if re.match('\$PAR$',uc):
+          """totally ignore the PAR parameter"""
+          return
+       if not m:
+          """Add non-parameter key words to the list and dictionary"""
+          if uc not in self._d:
+             self._l.append(key)
+          else:
+             #sys.stderr.write("Warning repeat key. Overwrites values\n")
+             ind = self._l.index(self._uc_to_orig[uc])
+             self._l[ind] = key
+          self._d[uc] = str(value)
+          self._uc_to_orig[uc] = key
        else:
-          #sys.stderr.write("Warning repeat key. Overwrites values\n")
-          ind = self._l.index(self._uc_to_orig[uc])
-          self._l[ind] = key
-       self._d[uc] = value
-       self._uc_to_orig[uc] = key
+          """ Store parameters differently """
+          index = int(m.group(2))
+          if index not in self._p: self._p[index] = {}
+          self._p[index][m.group(1)+'n'+m.group(3)] = str(value)
    def __contains__(self,key):
       if key.upper() in self._d: return True
       return False
@@ -167,13 +184,10 @@ class Text(KeyWordDict):
          prog = re.compile(self._delimiter+'('+not_single_slash+')'+self._delimiter+'('+not_single_slash+')')
          miter = prog.finditer(data.decode('utf-8'))
          """Bake removing the escape characters into generating the
-         key value pairs
-
-         Since keywords are case inssensitive, take them to uppercase,
-
-         no mater what."""
-         super().__init__([(m.group(1).replace(self._delimiter*2,self._delimiter).upper(),
-                            m.group(2).replace(self._delimiter*2,self._delimiter)) for m in miter])
+         key value pairs"""
+         vals = [(m.group(1).replace(self._delimiter*2,self._delimiter).upper(),
+                 m.group(2).replace(self._delimiter*2,self._delimiter)) for m in miter]
+         super().__init__(vals)
       else:
          """If no data start with an empty text field"""
          super().__init__([])
@@ -185,12 +199,23 @@ class Text(KeyWordDict):
    @property
    def bytes(self):
       ostr = self._delimiter
+      prog = re.compile('^(\$[PG])n([^\d]+)$')
       for key in self.keys():
          ostr+=key.replace(self._delimiter,self._delimiter*2)+self._delimiter\
               +self[key].replace(self._delimiter,self._delimiter*2)+self._delimiter
+      ostr += '$PAR'+self._delimiter+str(len(self.parameter_data.keys()))+self._delimiter
+      true_index = 0
+      for i in sorted(self.parameter_data.keys()):
+         true_index += 1
+         types = sorted(self.parameter_data[i].keys())
+         for type in types:
+            m = prog.match(type)
+            key = m.group(1)+str(true_index)+m.group(2)
+            ostr += key+self._delimiter+self.parameter_data[i][type]+self._delimiter
       return bytes(ostr.encode('utf-8'))
 
    def __str__(self):
+      print(self.bytes)
       return str(self.bytes)
 
    def _get_documented_keys(self,keywords):
@@ -235,10 +260,3 @@ class Text(KeyWordDict):
            set(self.get_optional_keys().values())
       return list(set(s2)-set(s1))
 
-   @property
-   def parameters(self):
-      n = int(self['$PAR'])
-      return [Parameter(x,self) for x in range(1,n+1)]
-   @property
-   def standard(self):
-      return Standard(self)
