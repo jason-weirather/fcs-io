@@ -26,7 +26,9 @@ class FCS:
       """header will need to be reconstructed"""
       self._text = Text(bytes[header.text_range.start:
                               header.text_range.end+1])
-      self._data = None
+      self._data = Data(bytes[header.data_range.start:
+                              header.data_range.end+1],
+                        self._text)
       self._analysis = None
       self._other = None
       self._supplementary_text = None
