@@ -1,4 +1,4 @@
-import re
+import re, sys
 from io import BytesIO
 from collections import namedtuple
 
@@ -62,18 +62,34 @@ class Header:
       (start,end) = (int(self._s[5]),int(self._s[6]))
       return ByteIndecies(start,end,
              start!=0 and end!=0)
-   def validate(self):
+   def validate(self,verbose=True):
       """Validate for 3.0 and 3.1 together for now"""
       if not self._s[0][0:6] == 'FCS3.0' and not self._s[0][0:6] == 'FCS3.1':
+         if verbose: sys.stderr.write("Validation failure FCS version: "+self._s[0][0:6]+"\n")
          return False
       """make sure the ranges make sense"""
       for i in range(2,7):
-         if not re.match('[ ]*\d+$',self._s[i]): return False
+         if not re.match('[ ]*\d+$',self._s[i]):
+            if verbose: sys.stderr.write("Validation failure range nonsense: "+self._s[i]+"\n")
+            return False
       """3.0 and 3.1 have the same header end and thus text start"""
-      if self.text_range.start != 58: return False
+      if self.text_range.start < 58: return False
       if self.text_range.end < 58: return False
       if self.text_range.end > 99999999: return False
       return True
+   @property
+   def user_defined_segment_range(self):
+      """If there is extra data in the header return it"""
+      if self.text_range.start == 58: return ByteIndecies(0,0,False)
+      dat = self._data[58:self.text_range.start].decode('ascii')
+      r = tuple(re.split('\s+',dat.strip()))
+      if len(r) > 2:
+         raise ValueError('Error: User defined segement has multiple ranges: '+dat)
+      prog = re.compile('^\d+$')
+      if (not prog.match(r[0])) or (not prog.match(r[1])):
+         raise ValueError('Error: User defined segement has non numeric range: '+dat)
+      return ByteIndecies(int(r[0]),int(r[1]),
+                          int(r[0]) != 0 and int(r[1]) != 0)
    def __str__(self):
       """return the actual header"""
       return ''.join(self._s)

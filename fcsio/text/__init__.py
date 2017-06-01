@@ -1,7 +1,8 @@
 import re, sys, json
 from io import BytesIO
 from collections import namedtuple
-from fcsio.parameter import Parameter
+from fcsio.text.parameters import Parameter
+from fcsio.text.standard import Standard
 
 _required_keywords = {
    '$BEGINANALYSIS':'Byte-offset to the beginning of the ANALYSIS segment.',
@@ -190,7 +191,7 @@ class Text(KeyWordDict):
       return bytes(ostr.encode('utf-8'))
 
    def __str__(self):
-      return self._data.decode('utf-8')
+      return str(self.bytes)
 
    def _get_documented_keys(self,keywords):
       """Return a dictionary keyed by optional keys with values being
@@ -238,3 +239,6 @@ class Text(KeyWordDict):
    def parameters(self):
       n = int(self['$PAR'])
       return [Parameter(x,self) for x in range(1,n+1)]
+   @property
+   def standard(self):
+      return Standard(self)

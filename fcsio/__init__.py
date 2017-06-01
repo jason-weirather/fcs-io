@@ -22,13 +22,26 @@ _param = {'B':'Number of bits reserved for parameters n',
 
 class FCS:
    def __init__(self,bytes):
-      header = Header(bytes[0:58])
+      header = Header(bytes) #[0:58])
       """header will need to be reconstructed"""
+      self._user_defined_segment = None
+      if header.user_defined_segment_range.in_header:
+         self._user_defined_segment = bytes[header.user_defined_segment_range.start:
+                                            header.user_defined_segment_range.end+1]
       self._text = Text(bytes[header.text_range.start:
                               header.text_range.end+1])
-      self._data = Data(bytes[header.data_range.start:
-                              header.data_range.end+1],
-                        self._text)
+      print(self._text)
+      self._data = None
+      if header.data_range.in_header:
+         """We can read data from the header range"""
+         self._data = Data(bytes[header.data_range.start:
+                                 header.data_range.end+1],
+                           self._text)
+      else:
+         """We couldn't read data range from the header try the text"""
+         self._data = Data(bytes[self._text.standard.BEGINDATA:
+                                 self._text.standard.ENDDATA+1],
+                           self._text)
       self._analysis = None
       self._other = None
       self._supplementary_text = None
