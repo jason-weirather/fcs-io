@@ -18,6 +18,7 @@ class Header:
          5. ASCII-encoded offset to last byte of DATA segment 34–41
          6. ASCII-encoded offset to first byte of ANALYSIS segment 42–49
          7. ASCII-encoded offset to last byte of ANALYSIS segment 50-57
+         8. OTHER segments 58 to start of TEXT
 
          ByteIndecies tell the 'start', the 'end' and whether or not
          (bool) a numerical range was read from the header. If no
@@ -78,18 +79,25 @@ class Header:
       if self.text_range.end > 99999999: return False
       return True
    @property
-   def user_defined_segment_range(self):
-      """If there is extra data in the header return it"""
-      if self.text_range.start == 58: return ByteIndecies(0,0,False)
+   def other_ranges(self):
+      """If there is extra data in the header return it
+
+      Assume pairs of coordinates for now as the only thing we'll see
+      for one or more user segments.
+
+      """
+      if self.text_range.start == 58: return []
       dat = self._data[58:self.text_range.start].decode('ascii')
       r = tuple(re.split('\s+',dat.strip()))
-      if len(r) > 2:
-         raise ValueError('Error: User defined segement has multiple ranges: '+dat)
+      if len(r) < 2: raise ValueError('Error expected at least two OTHER values in OTHER: '+dat)
+      if len(r) % 2 != 0:
+         raise ValueError('Error: User defined segement doesnt have pairs of values: '+dat)
       prog = re.compile('^\d+$')
       if (not prog.match(r[0])) or (not prog.match(r[1])):
          raise ValueError('Error: User defined segement has non numeric range: '+dat)
-      return ByteIndecies(int(r[0]),int(r[1]),
-                          int(r[0]) != 0 and int(r[1]) != 0)
+      rp = zip(r[0::2],r[1::2])
+      return [ByteIndecies(int(x[0]),int(x[1]),
+                          int(x[0]) != 0 and int(x[1]) != 0) for x in rp]
    def __str__(self):
       """return the actual header"""
       return ''.join(self._s)
