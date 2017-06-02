@@ -1,3 +1,4 @@
+from fcsio.text import get_required_keywords
 class Filter:
    """ Filter an FCS class according by various options and output an FCS """
    def __init__(self,fcs):
@@ -24,4 +25,23 @@ class Filter:
       return self._fcs
    def parameters(self,short_names=None):
       #if short_names is None: return self._fcs
+      return self._fcs
+   def minimize(self):
+      """Trim down self._fcs to all but the essentials"""
+
+      """eliminate OTHER fields"""
+      self._fcs._other = []
+
+      """eliminate non required keywords"""
+      rk = set(list(get_required_keywords().keys()))
+      present_keys = list(self._fcs.text.keys())
+      for k in present_keys:
+         if k.upper() not in rk:
+            del self._fcs.text[k.upper()]
+
+      """eliminate non required parameter properties"""
+      rk = set(list(get_required_keywords().keys()))
+      for i in self._fcs.text.parameter_data:
+         for k in list(self._fcs.text.parameter_data[i].keys()):
+            if k not in rk: del self._fcs.text.parameter_data[i][k]
       return self._fcs

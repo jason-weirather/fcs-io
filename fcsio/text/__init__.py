@@ -33,6 +33,8 @@ _required_keywords = {
    '$PnR':'Range for parameter number n.',
    '$TOT':'Total number of events in the data set.',
    }
+def get_required_keywords():
+   return _required_keywords
 
 _optional_keywords = {
    '$ABRT' :'Events lost due to data acquisition electronic coincidence.',
