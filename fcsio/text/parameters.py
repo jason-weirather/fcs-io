@@ -177,3 +177,7 @@ class Parameter:
    @detector_type.setter
    def detector_voltage(self,val):
       self._pdata[self._i]['$PnV'] = str(val)
+   def get_keywords(self):
+      return self._pdata[self._i].keys()
+   def __getitem__(self,key):
+      return self._pdata[self._i][key]

@@ -1,3 +1,15 @@
+"""Core for dealing with the TEXT definitions
+
+Note that byte-offset fields may change, and these will need be
+set during the process of preparing an output FCS file.  These
+fields will be available for reading prior to this but they will
+not have meaning until output.
+
+The fcsio._ConstructFCS class will do all this cleaning up of coordinates
+prior to outputting the FCS file.
+
+"""
+
 import re, sys, json
 from io import BytesIO
 from collections import namedtuple
@@ -218,45 +230,45 @@ class Text(KeyWordDict):
       print(self.bytes)
       return str(self.bytes)
 
-   def _get_documented_keys(self,keywords):
-      """Return a dictionary keyed by optional keys with values being
-      the keyword in the documentation
+   #def _get_documented_keys(self,keywords):
+   #   """Return a dictionary keyed by optional keys with values being
+   #   the keyword in the documentation
+   #
+   #   input is a dictionary of keywords and their description from 
+   #   the documentation
+   #   """
+   #   regexs = _get_regexs(keywords)
+   #   output = {}
+   #   """traverse the keys and look for ones with a maching regex"""
+   #   for key in self.keys():
+   #      v = [x.keyword for x in regexs if x.regex.match(key)]
+   #      if len(v) > 0: output[key] = v[0]
+   #   return output
 
-      input is a dictionary of keywords and their description from 
-      the documentation
-      """
-      regexs = _get_regexs(keywords)
-      output = {}
-      """traverse the keys and look for ones with a maching regex"""
-      for key in self.keys():
-         v = [x.keyword for x in regexs if x.regex.match(key)]
-         if len(v) > 0: output[key] = v[0]
-      return output
+   #def get_required_keys(self):
+   #   """Return a dictionary keyed by optional keys with values being
+   #   the keyword in the documentation"""
+   #   return self._get_documented_keys(_required_keywords.keys())
 
-   def get_required_keys(self):
-      """Return a dictionary keyed by optional keys with values being
-      the keyword in the documentation"""
-      return self._get_documented_keys(_required_keywords.keys())
+   #def get_unset_required_keywords(self):
+   #   """From keywords we know should be present... see if any are not there."""
+   #   return list(set(_required_keywords.keys())-set(self.get_required_keys().values()))
 
-   def get_unset_required_keywords(self):
-      """From keywords we know should be present... see if any are not there."""
-      return list(set(_required_keywords.keys())-set(self.get_required_keys().values()))
+   #@property
+   #def has_required_keywords(self):
+   #   """Members are present from all the required keywords"""
+   #   if len(self.get_unset_required_keywords()) == 0: return True
+   #   return False
 
-   @property
-   def has_required_keywords(self):
-      """Members are present from all the required keywords"""
-      if len(self.get_unset_required_keywords()) == 0: return True
-      return False
+   #def get_optional_keys(self):
+   #   """Return a dictionary keyed by optional keys with values being
+   #   the keyword in the documentation"""
+   #   return self._get_documented_keys(_optional_keywords.keys())
 
-   def get_optional_keys(self):
-      """Return a dictionary keyed by optional keys with values being
-      the keyword in the documentation"""
-      return self._get_documented_keys(_optional_keywords.keys())
-
-   def get_orphan_keys(self):
-      s1 = set(set(_required_keywords.keys()) | \
-          set(_optional_keywords.keys()))
-      s2 = set(self.get_required_keys().values()) | \
-           set(self.get_optional_keys().values())
-      return list(set(s2)-set(s1))
+   #def get_orphan_keys(self):
+   #   s1 = set(set(_required_keywords.keys()) | \
+   #       set(_optional_keywords.keys()))
+   #   s2 = set(self.get_required_keys().values()) | \
+   #        set(self.get_optional_keys().values())
+   #   return list(set(s2)-set(s1))
 

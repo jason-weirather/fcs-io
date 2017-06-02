@@ -115,15 +115,30 @@ class _ConstructedFCS:
       other_padding_length = 20
       hsize = basic_header_length + other_padding_length*2*len(fcs._other)
 
-      text_bytes = fcs.text.bytes
+      old_text_bytes = fcs.text.bytes
       text_start = hsize
-      text_end = text_start + len(text_bytes) - 1
+      text_end = text_start + len(old_text_bytes) - 1
+
+      """ There is a bit of a conundrum.
+          We need to set the TEXT size, but part of the TEXT
+          is the data_start and data_end. Setting data_start and data_end
+          could change the size of TEXT, thus changing data_start and
+          data_end.  Thanks for that. """
+
+      text_buffer = 100 # add a buffer to fix this
 
       data_bytes = fcs.data.bytes
-      real_data_start = text_end + 1
+      real_data_start = text_end + text_buffer + 1
       real_data_end = real_data_start + len(data_bytes)-1
       data_start = real_data_start # for display
       data_end = real_data_end
+      fcs.standard.BEGINDATA = data_start
+      fcs.standard.ENDDATA = data_end
+
+      text_bytes = fcs.text.bytes
+      if len(text_bytes) - len(old_text_bytes) > 100: raise ValueError('problem in conundrum condition in header constructor. buffer is not working right. implementation problem')
+      text_end = text_start+len(text_bytes)-1
+
       if data_end > 99999999:
          """so ugly. but this is the case for large data. you get it from TEXT"""
          data_start = 0
