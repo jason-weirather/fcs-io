@@ -66,7 +66,7 @@ def describe_header(fcs,of):
       analysis_string = 'True, '
       analysis_string +=str(fcs.standard.ENDANLYSIS-fcs.standard.BEGINANALYSIS+1)+' bytes'
    of.write("ANALYSIS: "+analysis_string+"\n")
-   other_string = False
+   other_string = 'False'
    if len(fcs.other) > 0:
       other_string = 'True, '
       word = 'segment'

@@ -76,8 +76,7 @@ class FCS:
    @property
    def version(self):
       return self._version
-   @property
-   def constructed_fcs(self): return _ConstructedFCS(self)
+   def construct_fcs(self,essential=False): return _ConstructedFCS(self,essential)
    """constructed_fcs makes the header"""
    @property
    def text(self):
@@ -109,11 +108,16 @@ class _ConstructedFCS:
    """A class to hold a created header and byte values
    so that data and text bytes corresponding to the header
    don't need to be recomputed"""
-   def __init__(self,fcs):
+   def __init__(self,fcs,essential=False):
+      self._essential=essential # only output the essential data?
+      self._other = fcs._other #set this early on because we may want to skip it
+      if self._essential: self._other = []
       """header is reconstructed"""
       basic_header_length = 58
       other_padding_length = 20
-      hsize = basic_header_length + other_padding_length*2*len(fcs._other)
+
+      hsize = basic_header_length + other_padding_length*2*len(self._other)
+      """adjust hsize if we are sticking only to the essential"""
 
       old_text_bytes = fcs.text.bytes
       text_start = hsize
@@ -136,6 +140,7 @@ class _ConstructedFCS:
       fcs.standard.ENDDATA = data_end
 
       text_bytes = fcs.text.bytes
+      dif = text_buffer-(len(text_bytes)-len(old_text_bytes))
       if len(text_bytes) - len(old_text_bytes) > 100: raise ValueError('problem in conundrum condition in header constructor. buffer is not working right. implementation problem')
       text_end = text_start+len(text_bytes)-1
 
@@ -156,30 +161,31 @@ class _ConstructedFCS:
                            analysis_end,
                            fcs.standard.ENDSTEXT])[-1]
       other_str = ''
-      for segment in fcs._other:
-         other_str += str(other_prev+1).ljust(other_padding_length)
-         other_str += str(other_prev+len(segment)).ljust(other_padding_length)
+      for segment in self._other:
+         other_str += str(other_prev+1).rjust(other_padding_length)
+         other_str += str(other_prev+len(segment)).rjust(other_padding_length)
          other_prev += len(segment)
       ostr =  fcs.version.ljust(10)
-      ostr += str(text_start).ljust(8) # TEXT start
-      ostr += str(text_end).ljust(8) # TEXT end
-      ostr += str(data_start).ljust(8)
-      ostr += str(data_end).ljust(8)
-      ostr += str(analysis_start).ljust(8)
-      ostr += str(analysis_end).ljust(8)
+      ostr += str(text_start).rjust(8) # TEXT start
+      ostr += str(text_end).rjust(8) # TEXT end
+      ostr += str(data_start).rjust(8)
+      ostr += str(data_end).rjust(8)
+      ostr += str(analysis_start).rjust(8)
+      ostr += str(analysis_end).rjust(8)
       ostr += other_str
       """accessable properties"""
       self.header_bytes = bytes(ostr,'ascii')
-      self.data_bytes = data_bytes
       self.text_bytes = text_bytes
-      self._other = fcs._other
+      self._dif = dif
+      self.data_bytes = data_bytes
    @property
    def fcs_bytes(self):
       return self.header_bytes+\
-             self.data_bytes+\
              self.text_bytes+\
-             ''.join(self._other)+\
-             '0'*8 # add the CRC
+             bytes(' '*self._dif,'ascii')+\
+             self.data_bytes+\
+             b''.join(self._other)+\
+             bytes('0'*8,'ascii') # add the CRC
    def __str__(self):
       """Just print the header with spaces replaced with astrix characters"""
       return self.header_bytes.decode('ascii').replace(' ','*')
