@@ -1,4 +1,3 @@
-
 import struct, re
 from io import BytesIO
 from fcsio.header import Header
@@ -152,7 +151,10 @@ class FCS:
       return self._other
    @property
    def parameters(self):
-      """Parameters needs to be accessed after both text and data have
+      """access to parameters. These are originally defined in keywords but
+      are not accessible through :class:`fcsio.text.Text` by keyword name.
+
+      Parameters needs to be accessed after both text and data have
       been intialized because data is coupled to parameters. Any changes
       is parameters will also affect data.
 
@@ -173,6 +175,12 @@ class FCS:
       return Standard(self._text)
    @property
    def filter(self):
+      """Filter an FCS file through a variety of methods defined by the :class:`fcsio.filter.Filter` class
+      Filter methods will then return a new FCS object based on a copy of the current, see the Filter class for more information.
+
+      :return: an object for filtering the FCS object
+      :rtype: :class:`fcsio.filter.Filter`
+      """
       return Filter(self)
 
 class StagedFCS:
@@ -180,8 +188,20 @@ class StagedFCS:
    so that data and text bytes corresponding to the header
    don't need to be recomputed
 
+   .. warning:: StagedFCS can do some modifications to the TEXT segement
+                defined in the :class:`fcsio.FCS` object used to intialize the class.
+                These are done to set apporpriate byte conditions since keywords,
+                parmeters, and data may have been modified.
+
+   .. note:: There is a bit of a conundrum.
+             We need to set the TEXT size, but part of the TEXT
+             is the data_start and data_end. Setting data_start and data_end
+             could change the size of TEXT, thus changing data_start and
+             data_end.  We deal with this by using buffers that leave enough room between
+             segments to accomodate size changes of segments based on value replacements.
+
    :param fcs: The FCS object being staged for output
-   :param essential: if True, trim off the OTHER segements
+   :param essential: optional, False by default, and if True, trim off the OTHER segements
    :type fcs: :class:`fcsio.FCS`
    :type essential: bool
    """
@@ -189,22 +209,16 @@ class StagedFCS:
       self._essential=essential # only output the essential data?
       self._other = fcs._other #set this early on because we may want to skip it
       if self._essential: self._other = []
-      """header is reconstructed"""
+      #header is reconstructed
       basic_header_length = 58
       other_padding_length = 20
 
       hsize = basic_header_length + other_padding_length*2*len(self._other)
-      """adjust hsize if we are sticking only to the essential"""
+      #adjust hsize if we are sticking only to the essential
 
       old_text_bytes = fcs.text.bytes
       text_start = hsize
       text_end = text_start + len(old_text_bytes) - 1
-
-      """ There is a bit of a conundrum.
-          We need to set the TEXT size, but part of the TEXT
-          is the data_start and data_end. Setting data_start and data_end
-          could change the size of TEXT, thus changing data_start and
-          data_end.  Thanks for that. """
 
       text_buffer = 100 # add a buffer to fix this
 
@@ -222,18 +236,18 @@ class StagedFCS:
       text_end = text_start+len(text_bytes)-1
 
       if data_end > 99999999:
-         """so ugly. but this is the case for large data. you get it from TEXT"""
+         #so ugly. but this is the case for large data. you get it from TEXT
          data_start = 0
          data_end = 0
 
-      """need to implement analysis some day"""
+      #need to implement analysis some day
       analysis_start = 0
       analysis_end = 0
 
-      """ Put other segements after the supplemental text """
+      #Put other segements after the supplemental text 
       if fcs.standard.BEGINSTEXT != 0:
           raise ValueError('Need to implement supplemental text here')
-      """set the positions for the OTHER segments"""
+      #set the positions for the OTHER segments
       other_prev = sorted([real_data_end,
                            analysis_end,
                            fcs.standard.ENDSTEXT])[-1]
@@ -255,8 +269,14 @@ class StagedFCS:
       self.text_bytes = text_bytes
       self._dif = dif
       self.data_bytes = data_bytes
+
    @property
    def fcs_bytes(self):
+      """get the real data as a bytearray from the FCS object
+
+      :return: The FCS raw data
+      :rtype: bytearray
+      """
       return self.header_bytes+\
              self.text_bytes+\
              bytes(' '*self._dif,'ascii')+\
