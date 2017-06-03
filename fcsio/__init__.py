@@ -1,3 +1,4 @@
+
 import struct, re
 from io import BytesIO
 from fcsio.header import Header
@@ -8,6 +9,15 @@ from fcsio.text.standard import Standard
 from fcsio.filter import Filter
 
 class FCS:
+   """The primary class for working with FCS file data is the FCS class.
+
+   :param bytes: The raw data of the FCS file
+   :param fcs: :class:`fcsio.FCS` object to create a new FCS from. Used by copy.
+   :type bytes: bytearray
+   :type fcs: fcsio.FCS
+
+    You must specify either bytes or fcs.  not both.
+    """
    def __init__(self,bytes=None,fcs=None):
       self._version = None
       self._data = None
@@ -71,43 +81,110 @@ class FCS:
       Creates a new object for everything EXCEPT the OTHER fields
       (for now)
 
+      .. warning:: The copy is not a perfect copy. OTHER fields are still
+                   passsed by reference. And no attempt is made at outputing
+                   identical bytes as input.  If you need a completely new
+                   FCS object unlinked to the old, you can use
+                   `totally_new = FCS(myoldfcs.construct_fcs().fcs_bytes)`
+
+      :return: Make a new FCS object htat is a copy of this one.
+      :rtype: :class:`fcsio.FCS`
       """
       return FCS(fcs=self)
+
+   def construct_fcs(self,essential=False):
+      """To get an actual file out of an FCS object the
+      construct_fcs method is required to be called.
+
+      :param essential: An optional argument, where if set to True, will trim off the OTHER segements. The other objects are passed as references so clearing them may not be generally necessary for conserving memory.
+      :type essential: bool
+      :return: Generate an object with methods necessary for outputing a new FCS file (bytes that can be written)
+      :rtype: :class:`fcsio.StagedFCS`
+      """
+      return StagedFCS(self,essential)
    @property
    def version(self):
+      """Version as listed in the first 10 bytes of the header
+
+      :return: version
+      :rtype: string
+      """
       return self._version
-   def construct_fcs(self,essential=False): return _ConstructedFCS(self,essential)
-   """constructed_fcs makes the header"""
    @property
    def text(self):
+      """access the TEXT segment
+
+      .. note:: The object containing the TEXT segment initially
+                separates the keywords from per-parameter keywords. The
+                per-parameter information is better accessed through the
+                FCS property :class:`fcsio.FCS.parameters` . The standard FCS
+                keywords are accessible via properties of the :class:`fcsio.FCS.standard` .
+                This is a better choice for getting and setting values if you want to
+                use more logical types instead of strings for everything.  Finally
+                keep in mind that although TEXT may contain information such as
+                DATABEGINS or DATAENDS, these values are not updated until the
+                :class:`fcsio.FCS.construct_fcs` method is called.  At this point they
+                will be updated.
+
+      :alsosee: :class:`fcsio.FCS.parameters`
+      :alsosee: :class:`fcsio.FCS.standard`
+
+      :return: Get the object for accessing the TEXT segment data
+      :rtype: :class:`fcsio.text.Text`
+      """
       return self._text
+
    @property
    def data(self):
+      """access the DATA segment
+
+      :return: Get an object for accessing the DATA segment
+      :rtype: :class:`fcsio.data.Data`
+      """
       return self._data
    @property
    def other(self):
-      """returns a list of others"""
+      """access the OTHER segments (user defined fields specified at the end of the header)
+
+      :return: Get the data from OTHER user defined segments at the end of the header
+      :rtype: list of bytearrays
+      """
       return self._other
-   @property
-   def other_segments(self): return self._other_segments
    @property
    def parameters(self):
       """Parameters needs to be accessed after both text and data have
       been intialized because data is coupled to parameters. Any changes
-      is parameters will also affect data."""
+      is parameters will also affect data.
+
+      :return: get an object for accessing/modifying paramters
+      :rtype: :class:`fcsio.text.parameters.Parameters`
+      """
       return Parameters(self.text,self.data)
    @property
    def standard(self):
-      """access and set where possible standard TEXT fields through here"""
+      """access and set where possible standard TEXT fields through here.
+      You can access these fields through :class:`fcsio.text.Text` also but
+      are limited to string input and outputs.
+
+      :alsosee: :class:`fcsio.text.Text`
+      :return: get an object for accessing/modifying standard keywords in TEXT
+      :rtype: :class:`fcsio.text.standard.Standard`
+      """
       return Standard(self._text)
    @property
    def filter(self):
       return Filter(self)
 
-class _ConstructedFCS:
+class StagedFCS:
    """A class to hold a created header and byte values
    so that data and text bytes corresponding to the header
-   don't need to be recomputed"""
+   don't need to be recomputed
+
+   :param fcs: The FCS object being staged for output
+   :param essential: if True, trim off the OTHER segements
+   :type fcs: :class:`fcsio.FCS`
+   :type essential: bool
+   """
    def __init__(self,fcs,essential=False):
       self._essential=essential # only output the essential data?
       self._other = fcs._other #set this early on because we may want to skip it

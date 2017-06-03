@@ -9,16 +9,33 @@ Welcome to fcs-io's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+Module class descriptions
+-------------------------------------------------------
+
+FCS
++++
 .. automodule:: fcsio
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+.. automodule:: fcsio.filter
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
+HEADER data
++++++++++++++++++++++++++++++++++++++++++++++
 .. automodule:: fcsio.header
     :members:
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+
+TEXT segment
+++++++++++++
 .. automodule:: fcsio.text
     :members:
     :undoc-members:
@@ -34,12 +51,10 @@ Welcome to fcs-io's documentation!
     :undoc-members:
     :inherited-members:
     :show-inheritance:
+
+DATA segment
+++++++++++++
 .. automodule:: fcsio.data
-    :members:
-    :undoc-members:
-    :inherited-members:
-    :show-inheritance:
-.. automodule:: fcsio.filter
     :members:
     :undoc-members:
     :inherited-members:

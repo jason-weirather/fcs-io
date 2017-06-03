@@ -1,15 +1,15 @@
 from this directory generate documentation with:
 
-mkdir build
 sphinx-build -b html source/ build/
 
 for html
 
 or
 
-mkdir build
 sphinx-build -b latex source/ build/
 cd build
 make
 
 for latex pdf
+
+edit documentation in source/index.rst or in the modules its linking
