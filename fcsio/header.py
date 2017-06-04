@@ -3,35 +3,35 @@ from io import BytesIO
 from collections import namedtuple
 
 ByteIndecies = namedtuple('ByteIndecies',['start','end','in_header'])
-"""One indexed byte locations of start and end"""
+"""1-indexed byte locations of start and end with a bool specifying if it was defined in the header or not"""
 
 class Header:
+   """The header class is only used temporarily when reading the FCS from
+   data.  The version is the only value that doesn't change depending on
+   how the data is altered.
+
+   3.0 from the spec 1997 Seamer Current Protocols in Cytometry
+
+   1. FCS 3.0 followed by spaces 00-09
+   2. ASCII-encoded offset to first byte of TEXT segment 10–17
+   3. ASCII-encoded offset to last byte of TEXT segment 18–25
+   4. ASCII-encoded offset to first byte of DATA segment 26–33
+   5. ASCII-encoded offset to last byte of DATA segment 34–41
+   6. ASCII-encoded offset to first byte of ANALYSIS segment 42–49
+   7. ASCII-encoded offset to last byte of ANALYSIS segment 50-57
+   8. OTHER segments 58 to start of TEXT
+
+   :class:`fcsio.header.ByteIndecies` tell the 'start', the 'end' and whether or not
+   (bool) a numerical range was read from the header. If no
+   numerical range was reported it is likely either absent from
+   the file or coded in the TEXT
+
+   :param data: The FCS file data (not just the first 58 bytes)
+   :type data: bytearray
+   """
    def __init__(self,data):
       self._data = data
       self._stream = BytesIO(self._data)
-      """3.0 from the spec 1997 Seamer Current Protocols in Cytometry
-
-         1. FCS 3.0 followed by spaces 00-09
-         2. ASCII-encoded offset to first byte of TEXT segment 10–17
-         3. ASCII-encoded offset to last byte of TEXT segment 18–25
-         4. ASCII-encoded offset to first byte of DATA segment 26–33
-         5. ASCII-encoded offset to last byte of DATA segment 34–41
-         6. ASCII-encoded offset to first byte of ANALYSIS segment 42–49
-         7. ASCII-encoded offset to last byte of ANALYSIS segment 50-57
-         8. OTHER segments 58 to start of TEXT
-
-         ByteIndecies tell the 'start', the 'end' and whether or not
-         (bool) a numerical range was read from the header. If no
-         numerical range was reported it is likely either absent from
-         the file or coded in the TEXT
-
-         :param text_range: namedtuple start and end bytes of TEXT
-         :param data_range: namedtuple start and end bytes of DATA
-         :param analysis_range: namedtuple start and end bytes of ANALYSIS
-         :type text_range: ByteIndecies
-         :type data_range: ByteIndecies
-         :type analysis_range: ByteIndecies
-         """
       b = BytesIO(self._data[0:58])
       h1 = b.read(10).decode('ascii') # 0-9
       h2 = b.read(8).decode('ascii') # 10-17
@@ -45,35 +45,59 @@ class Header:
          sys.stderr.write("Warning: header did not validate\n")
    @property
    def version(self):
-      """Process the version string to remove the padding"""
+      """ get the version
+
+      :return: version string from the beginning of the header with whitespace removed
+      :rtype: string
+      """
       return self._s[0].rstrip()
    @property
    def text_range(self):
-      """Should be between the end of the header and less than 99,999,999"""
+      """Should be between the end of the header and less than 99,999,999
+
+      :return: get the text range. it is required to be present.
+      :rtype: :class:`fcsio.header.ByteIndecies`
+      """
       (start,end) = (int(self._s[1]),int(self._s[2]))
       return ByteIndecies(start,end,
              start!=0 and end!=0)
    @property
    def data_range(self):
+      """Can be zero if the end exceeds 99,999,999. To indicate
+      it is set within the TEXT segment.
+
+      :return: get the data range. it is required to be present.
+      :rtype: :class:`fcsio.header.ByteIndecies`
+      """
       (start,end) = (int(self._s[3]),int(self._s[4]))
       return ByteIndecies(start,end,
              start!=0 and end!=0)
    @property
    def analysis_range(self):
+      """Can be zero if the end exceeds 99,999,999. To indicate
+      it is set within the TEXT segment. or that its absent.
+
+      :return: get the analysis range. it is required to be present.
+      :rtype: :class:`fcsio.header.ByteIndecies`
+      """
       (start,end) = (int(self._s[5]),int(self._s[6]))
       return ByteIndecies(start,end,
              start!=0 and end!=0)
    def validate(self,verbose=True):
-      """Validate for 3.0 and 3.1 together for now"""
+      """Validate for 3.0 and 3.1 together for now
+
+      :return: Is it a valid header?
+      :rtype:  bool
+      """
       if not self._s[0][0:6] == 'FCS3.0' and not self._s[0][0:6] == 'FCS3.1':
          if verbose: sys.stderr.write("Validation failure FCS version: "+self._s[0][0:6]+"\n")
          return False
-      """make sure the ranges make sense"""
+      #make sure the ranges make sense
       for i in range(2,7):
          if not re.match('[ ]*\d+$',self._s[i]):
             if verbose: sys.stderr.write("Validation failure range nonsense: "+self._s[i]+"\n")
             return False
-      """3.0 and 3.1 have the same header end and thus text start"""
+      #3.0 and 3.1 have the same header end and thus text start
       if self.text_range.start < 58: return False
       if self.text_range.end < 58: return False
       if self.text_range.end > 99999999: return False
@@ -85,6 +109,8 @@ class Header:
       Assume pairs of coordinates for now as the only thing we'll see
       for one or more user segments.
 
+      :return: Get the coordinates of OTHER segements
+      :rtype: list of :class:`fcsio.header.ByteIndecies`
       """
       if self.text_range.start == 58: return []
       dat = self._data[58:self.text_range.start].decode('ascii')
