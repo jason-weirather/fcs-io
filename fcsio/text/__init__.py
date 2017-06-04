@@ -5,7 +5,7 @@ set during the process of preparing an output FCS file.  These
 fields will be available for reading prior to this but they will
 not have meaning until output.
 
-The fcsio._ConstructFCS class will do all this cleaning up of coordinates
+The fcsio.StageFCS class will do all this cleaning up of coordinates
 prior to outputting the FCS file.
 
 """
@@ -33,7 +33,13 @@ _required_keywords = {
    '$PnR':'Range for parameter number n.',
    '$TOT':'Total number of events in the data set.',
    }
+
 def get_required_keywords():
+   """Return a dictionary of the required keywords
+
+   :return: keywords that are required, as keys to their description
+   :rtype: dict
+   """
    return _required_keywords
 
 _optional_keywords = {
@@ -113,6 +119,8 @@ class KeyWordDict:
 
    Since keywords are case inssensitive, take them to uppercase,
 
+   :param kvs: key-value pairs
+   :type kvs: list of key-value pairs
    """
    def __init__(self,kvs=[]):
        self._d = {} # dictionary keyed uppercase
@@ -123,8 +131,25 @@ class KeyWordDict:
        for kv in kvs:
           self._do_set(kv[0],kv[1])
    @property
-   def parameter_data(self): return self._p
-   def keys(self): return self._l
+   def parameter_data(self): 
+      """Parameter data keyed bye index then generic keyword
+
+      :return: dict of parameters keyed by their index and generic keyword
+      :rtype: dict
+      """
+      return self._p
+
+   def keys(self): 
+      """Keywords of TEXT that can be accessed and modified.
+      This does not include the parameter keywords, because they
+      must be accessed through the :class:`fcsio.FCS.parameters`
+      property, or through the property here of 
+      :class:`fcsio.text.Text.parameter_data`
+
+      :return: list of keywords
+      :rtype: list
+      """
+      return self._l
    def __iter__(self):
       for k in self.keys(): yield k
    def __getitem__(self,key):
@@ -212,6 +237,16 @@ class Text(KeyWordDict):
 
    @property
    def bytes(self):
+      """Get the data bytes from TEXT.
+
+      .. warning:: To properly prepare the TEXT data with the byte ranges set
+                   correctly, you should not call :class:`fcsio.text.Text.bytes`
+                   property directly. Rather you should use
+                   :class:`fcsio.FCS.construct_fcs`
+
+      :return: the data
+      :rtype: bytearray
+      """
       ostr = self._delimiter
       prog = re.compile('^(\$[PG])n([^\d]+)$')
       for key in self.keys():
@@ -231,46 +266,3 @@ class Text(KeyWordDict):
    def __str__(self):
       print(self.bytes)
       return str(self.bytes)
-
-   #def _get_documented_keys(self,keywords):
-   #   """Return a dictionary keyed by optional keys with values being
-   #   the keyword in the documentation
-   #
-   #   input is a dictionary of keywords and their description from 
-   #   the documentation
-   #   """
-   #   regexs = _get_regexs(keywords)
-   #   output = {}
-   #   """traverse the keys and look for ones with a maching regex"""
-   #   for key in self.keys():
-   #      v = [x.keyword for x in regexs if x.regex.match(key)]
-   #      if len(v) > 0: output[key] = v[0]
-   #   return output
-
-   #def get_required_keys(self):
-   #   """Return a dictionary keyed by optional keys with values being
-   #   the keyword in the documentation"""
-   #   return self._get_documented_keys(_required_keywords.keys())
-
-   #def get_unset_required_keywords(self):
-   #   """From keywords we know should be present... see if any are not there."""
-   #   return list(set(_required_keywords.keys())-set(self.get_required_keys().values()))
-
-   #@property
-   #def has_required_keywords(self):
-   #   """Members are present from all the required keywords"""
-   #   if len(self.get_unset_required_keywords()) == 0: return True
-   #   return False
-
-   #def get_optional_keys(self):
-   #   """Return a dictionary keyed by optional keys with values being
-   #   the keyword in the documentation"""
-   #   return self._get_documented_keys(_optional_keywords.keys())
-
-   #def get_orphan_keys(self):
-   #   s1 = set(set(_required_keywords.keys()) | \
-   #       set(_optional_keywords.keys()))
-   #   s2 = set(self.get_required_keys().values()) | \
-   #        set(self.get_optional_keys().values())
-   #   return list(set(s2)-set(s1))
-

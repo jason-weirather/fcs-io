@@ -10,8 +10,8 @@ Welcome to fcs-io's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-Module class descriptions
--------------------------------------------------------
+Module
+------
 
 FCS
 +++

@@ -19,7 +19,7 @@ def main(args):
    cell_count = fcs.standard.TOT
    do_essential = args.essential==True
    if args.range is not None:
-      f2 = fcs.filter.cells(range(args.range[0]-1,args.range[1]))
+      f2 = fcs.filter.events(range(args.range[0]-1,args.range[1]))
       of.write(f2.construct_fcs(do_essential).fcs_bytes)
       of.close()
       return
@@ -27,7 +27,7 @@ def main(args):
       rset = list(range(0,fcs.standard.TOT))
       random.shuffle(rset)
       rset = sorted(rset[0:args.random])
-      f2 = fcs.filter.cells(rset)
+      f2 = fcs.filter.events(rset)
       of.write(f2.construct_fcs(do_essential).fcs_bytes)
       of.close()
       return
@@ -40,7 +40,7 @@ def do_inputs():
    parser.add_argument('-o','--output',help="Output FCS file or STDOUT if not set")
    parser.add_argument('--essential',action='store_true',help="Only output the essential parts.  Exclude OTHER fields.")
    group1 = parser.add_mutually_exclusive_group()
-   group1.add_argument('--range',nargs=2,type=int,help="get cells in this range (1 indexed)")
+   group1.add_argument('--range',nargs=2,type=int,help="get events (cells) in this range (1 indexed)")
    group1.add_argument('--random',type=int,help="number of cells to randomly draw")
    args = parser.parse_args()
    return args
