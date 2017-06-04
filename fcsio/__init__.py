@@ -1,5 +1,6 @@
 import struct, re
 from io import BytesIO
+from math import ceil
 from fcsio.header import Header
 from fcsio.text import Text
 from fcsio.data import Data
@@ -9,6 +10,13 @@ from fcsio.filter import Filter
 
 class FCS:
    """The primary class for working with FCS file data is the FCS class.
+
+   .. note:: **For most use cases, every operation will be done through the
+             FCS class and its methods and properties.** A complete list of
+             classes within the module is included because many of the
+             methods and properties of this class are helper
+             classes and descriptions of those classes will explain their
+             available properties and methods.
 
    :param bytes: The raw data of the FCS file
    :param fcs: :class:`fcsio.FCS` object to create a new FCS from. Used by copy.
@@ -84,23 +92,34 @@ class FCS:
                    passsed by reference. And no attempt is made at outputing
                    identical bytes as input.  If you need a completely new
                    FCS object unlinked to the old, you can use
-                   `totally_new = FCS(myoldfcs.construct_fcs().fcs_bytes)`
+                   `totally_new = FCS(myoldfcs.output_constructor().fcs_bytes)`
 
       :return: Make a new FCS object htat is a copy of this one.
       :rtype: :class:`fcsio.FCS`
       """
       return FCS(fcs=self)
 
-   def construct_fcs(self,essential=False):
-      """To get an actual file out of an FCS object the
-      construct_fcs method is required to be called.
+   def output_constructor(self,essential=False,adjust_range=True):
+      """Get the bytes of an actual file for an FCS object through the
+      output_constructor method is required to be called.
+
+      .. note:: You can just access this functionally if you like, or
+                you can assign it to a variable if you have some reason
+                to access it multiple times to reduce computation.
+
+      .. warning:: If you need to access multiple propertys from the factory,
+                   you should save the factory and access them all from that
+                   same instance of factory. The common use case will only be
+                   to access fcs_bytes, so this shouldn't usually be an issue.
 
       :param essential: An optional argument, where if set to True, will trim off the OTHER segements. The other objects are passed as references so clearing them may not be generally necessary for conserving memory.
       :type essential: bool
+      :param adjust_range: An optional argument, default True, to adjust range of parameter to that parameters largest current value
+      :type adjust_range: int
       :return: Generate an object with methods necessary for outputing a new FCS file (bytes that can be written)
-      :rtype: :class:`fcsio.StagedFCS`
+      :rtype: :class:`fcsio.FCSFactory`
       """
-      return StagedFCS(self,essential)
+      return FCSFactory(self,essential)
    @property
    def version(self):
       """Version as listed in the first 10 bytes of the header
@@ -122,8 +141,13 @@ class FCS:
                 use more logical types instead of strings for everything.  Finally
                 keep in mind that although TEXT may contain information such as
                 DATABEGINS or DATAENDS, these values are not updated until the
-                :class:`fcsio.FCS.construct_fcs` method is called.  At this point they
+                :class:`fcsio.FCS.output_constructor` method is called.  At this point they
                 will be updated.
+
+      .. warning:: When first read in, these will have original values, but
+                   values can change while altering the file, and after
+                   the output constructor is called, expect byte ranges
+                   to shift.
 
       :alsosee: :class:`fcsio.FCS.parameters`
       :alsosee: :class:`fcsio.FCS.standard`
@@ -168,6 +192,11 @@ class FCS:
       You can access these fields through :class:`fcsio.text.Text` also but
       are limited to string input and outputs.
 
+      .. warning:: When first read in, these will have original values, but
+                   values can change while altering the file, and after
+                   the output constructor is called, expect byte ranges
+                   to shift.
+
       :alsosee: :class:`fcsio.text.Text`
       :return: get an object for accessing/modifying standard keywords in TEXT
       :rtype: :class:`fcsio.text.standard.Standard`
@@ -183,12 +212,12 @@ class FCS:
       """
       return Filter(self)
 
-class StagedFCS:
+class FCSFactory:
    """A class to hold a created header and byte values
    so that data and text bytes corresponding to the header
    don't need to be recomputed
 
-   .. warning:: StagedFCS can do some modifications to the TEXT segement
+   .. warning:: FCSFactory can do some modifications to the TEXT segement
                 defined in the :class:`fcsio.FCS` object used to intialize the class.
                 These are done to set apporpriate byte conditions since keywords,
                 parmeters, and data may have been modified.
@@ -202,13 +231,23 @@ class StagedFCS:
 
    :param fcs: The FCS object being staged for output
    :param essential: optional, False by default, and if True, trim off the OTHER segements
+   :param adjust_range: optional, True by defualt, adjust the range of each paramater to have a max in that is rounded above the or equal to the highest value
    :type fcs: :class:`fcsio.FCS`
    :type essential: bool
+   :type adjust_range: bool
    """
-   def __init__(self,fcs,essential=False):
+   def __init__(self,fcs,essential=False,adjust_range=True):
       self._essential=essential # only output the essential data?
       self._other = fcs._other #set this early on because we may want to skip it
       if self._essential: self._other = []
+
+      #go through and adjust range for $PnR if adjust_range
+      if adjust_range:
+         for p in fcs.parameters:
+            i = p.index
+            mat = fcs.data.matrix
+            p.range = ceil(max([row[i] for row in mat]))
+
       #header is reconstructed
       basic_header_length = 58
       other_padding_length = 20
@@ -265,10 +304,84 @@ class StagedFCS:
       ostr += str(analysis_end).rjust(8)
       ostr += other_str
       """accessable properties"""
-      self.header_bytes = bytes(ostr,'ascii')
-      self.text_bytes = text_bytes
+      self._header_bytes = bytes(ostr,'ascii')
+      self._text_bytes = text_bytes
       self._dif = dif
-      self.data_bytes = data_bytes
+      self._data_bytes = data_bytes
+      self._text = fcs.text
+      self._standard = fcs.standard
+      self._parameters = fcs.parameters
+
+   @property
+   def text(self):
+      """get the text object after adjustment for output
+
+      .. warning:: This will likely be differnet than what was read in
+                   for byte ranges
+
+      :return: Text object ready for output
+      :rtype: `fcsio.text.Text`
+      """
+      return self._text
+   @property
+   def standard(self):
+      """get the standard TEXT object after adjustment for output
+
+      .. warning:: This will likely be different than what was read in
+                   for byte ranges
+
+      :return: object to access standard keywords and values
+      :rtype: :class:`fcsio.text.standard.Standard`
+      """
+      return self._standard
+
+   @property
+   def parameters(self):
+      """get the parameters accessing object from TEXT after adjustments
+
+      .. warning:: This will have differnet ranges unless you keep them the
+                   same by output constructor options
+
+      :return: object to access standard keywords and values
+      :rtype: :class:`fcsio.text.parameters.Parameters`
+      """
+      return self._parameters
+
+   @property
+   def header_bytes(self):
+      """get the header bytes of the FCS object 
+
+      :return: the bytes bound for the header
+      :rtype: bytearray
+      """
+      return self._header_bytes
+
+   @property
+   def data_bytes(self):
+      """get the DATA segment bytes of the FCS object 
+
+      :return: the bytes in the DATA segment
+      :rtype: bytearray
+      """
+      return self._header_bytes
+
+   @property
+   def text_bytes(self):
+      """get the TEXT segment bytes of the FCS object 
+
+      :return: the bytes in the TEXT segment
+      :rtype: bytearray
+      """
+      return self._text_bytes
+
+   @property
+   def other(self):
+      """get the OTHER segment bytes as a list of bytearrays
+
+      :return: any data segments defined as OTHER
+      :rtype: list of bytearrays
+      """
+      return self._other
 
    @property
    def fcs_bytes(self):

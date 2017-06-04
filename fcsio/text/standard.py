@@ -1,6 +1,11 @@
 class Standard:
    """ interact with text fields through standard key words,
    these EXCLUDE parameters which are available in 'parameter'
+
+   .. warning:: While you may be able to read and alter parameters
+                here, any byte ranges will hold very little meaning
+                excpet when first read and describing an original file
+                or after an output_constructor has been called and you
    """
    def __init__(self,text):
       self._text = text
