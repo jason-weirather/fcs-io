@@ -259,7 +259,7 @@ class FCSFactory:
       text_start = hsize
       text_end = text_start + len(old_text_bytes) - 1
 
-      text_buffer = 100 # add a buffer to fix this
+      text_buffer = 1000 # add a buffer to fix this
 
       data_bytes = fcs.data.bytes
       real_data_start = text_end + text_buffer + 1
