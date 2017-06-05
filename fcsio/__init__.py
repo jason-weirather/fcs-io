@@ -11,12 +11,13 @@ from fcsio.filter import Filter
 class FCS:
    """The primary class for working with FCS file data is the FCS class.
 
-   .. note:: **For most use cases, every operation will be done through the
-             FCS class and its methods and properties.** A complete list of
-             classes within the module is included because many of the
-             methods and properties of this class are helper
-             classes and descriptions of those classes will explain their
-             available properties and methods.
+   .. note:: **Use this class to work with FCS data.** 
+
+   A complete list of
+   classes within the module is included because many of the
+   methods and properties of this class are helper
+   classes and descriptions of those classes will explain their
+   available properties and methods.
 
    :param bytes: The raw data of the FCS file
    :param fcs: :class:`fcsio.FCS` object to create a new FCS from. Used by copy.
@@ -88,7 +89,8 @@ class FCS:
       Creates a new object for everything EXCEPT the OTHER fields
       (for now)
 
-      .. warning:: The copy is not a perfect copy. OTHER fields are still
+      .. warning:: The copy is neither a perfect copy, nor is it memory
+                   independent. OTHER fields are still
                    passsed by reference. And no attempt is made at outputing
                    identical bytes as input.  If you need a completely new
                    FCS object unlinked to the old, you can use

@@ -2,6 +2,15 @@ from io import BytesIO
 from struct import unpack, pack
 
 class Data:
+   """The class for working with the data attached to an fcs object
+
+   :param data: bytes of the Data segment
+   :param standard: class for interfacing with the TEXT
+   :param text: main TEXT class
+   :type data: bytearray
+   :type standard: :class:`fcsio.text.standard.Standard`
+   :type text: :class:`fcsio.text.Text`
+   """
    def __init__(self,data,standard,text):
       bytes = BytesIO(data)
       self._standard = standard
@@ -18,10 +27,20 @@ class Data:
          o.append(list(f))
       self._matrix = o
    @property
-   def row_count(self):
-      return len(self._matrix)
+   def event_count(self):
+      """Get the number of events
+
+      :return: the event count
+      :rtype: int
+      """
+      return len(self.matrix)
    @property
    def bytes(self):
+      """Get the data
+
+      :return: constructed data
+      :rtype: bytearray
+      """
       ob = bytearray()
       datatype = '<'
       if self._standard.BYTEORD == 'big endian': datatype = '>'
@@ -32,6 +51,11 @@ class Data:
 
    @property
    def matrix(self):
+      """Get the data matrix
+
+      :return: stored data matrix
+      :rtype: 2D matrix list of rows, rows are lists of float
+      """
       return self._matrix
    @matrix.setter
    def matrix(self,mat):

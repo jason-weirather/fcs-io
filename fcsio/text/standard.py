@@ -13,6 +13,13 @@ class Standard:
    """Byte-offest to the beginning of the ANALYSIS segment"""
    @property
    def BEGINANALYSIS(self):
+      """Get the byte offset for BEGINANALYSIS
+
+      **Setter:** assign an `int` to the keyword
+
+      :return: the BEGINANALYSIS value
+      :rtype: int
+      """
       return int(self._text['$BEGINANALYSIS'])
    @BEGINANALYSIS.setter
    def BEGINANALYSIS(self,val):
@@ -21,6 +28,13 @@ class Standard:
    """Byte-offset to the beginning of the DATA segment"""
    @property
    def BEGINDATA(self):
+      """Get the byte offset for BEGINDATA
+
+      **Setter:** assign an `int` to the keyword
+
+      :return: the BEGINDATA value
+      :rtype: int
+      """
       return int(self._text['$BEGINDATA'])
    @BEGINDATA.setter
    def BEGINDATA(self,val):
@@ -29,6 +43,13 @@ class Standard:
    """Byte-offset to the beginning of the TEXT segment"""
    @property
    def BEGINSTEXT(self):
+      """Get the byte offset for BEGINTEXT supplemental text
+
+      **Setter:** assign an `int` to the keyword
+
+      :return: the BEGINTEXT value
+      :rtype: int
+      """
       return int(self._text['$BEGINSTEXT'])
    @BEGINSTEXT.setter
    def BEGINSTEXT(self,val):
@@ -37,6 +58,13 @@ class Standard:
    """Byte order for data acquisition computer"""
    @property
    def BYTEORD(self):
+      """Get the byte order type as either 'little endian' or 'big endian'
+
+      **Setter:** set the key word from either 'little endian' or 'big endian' string
+
+      :return: the BYTEORD description
+      :rtype: string that is either 'little endian' or 'big endian'
+      """
       if self._text['$BYTEORD'] == '1,2,3,4': return 'little endian'
       if self._text['$BYTEORD'] == '4,3,2,1': return 'big endian'
       raise ValueError("Unsupported byte order "+self._text['$BYTEORD'])
@@ -47,9 +75,15 @@ class Standard:
       elif val == 'big endian': self._text['$BYTEORD'] = '4,3,2,1'
       else: ValueError("Must set BYTEORD to either 'little endian' or 'big endian'")
 
-   """Type of data in the DATA segment"""
    @property
    def DATATYPE(self):
+      """Type of the DATA in the data segment
+
+      **Setter:** assign an `char` to the keyword
+
+      :return: the DATATYPE
+      :rtype: char
+      """
       return self._text['$DATATYPE']
    @DATATYPE.setter
    def DATATYPE(self,val):
@@ -60,6 +94,13 @@ class Standard:
    """Byte-offset to the end of the ANALYSIS segment"""
    @property
    def ENDANALYSIS(self):
+      """Get the byte offset for ENDANALYSIS
+
+      **Setter:** assign an `int` to the keyword
+
+      :return: the ENDANALYSIS value
+      :rtype: int
+      """
       return int(self._text['$ENDANALYSIS'])
    @ENDANALYSIS.setter
    def ENDANALYSIS(self,val):
@@ -68,6 +109,13 @@ class Standard:
    """Byte-offset to the end of the DATA segment"""
    @property
    def ENDDATA(self):
+      """Get the byte offset for ENDDATA
+
+      **Setter:** assign an `int` to the keyword
+
+      :return: the ENDDATA value
+      :rtype: int
+      """
       return int(self._text['$ENDDATA'])
    @ENDDATA.setter
    def ENDDATA(self,val):
@@ -76,6 +124,13 @@ class Standard:
    """Byte-offset to the end of the TEXT segment"""
    @property
    def ENDSTEXT(self):
+      """Get the byte offset for ENDSTEXT supplemental text
+
+      **Setter:** assign an `int` to the keyword
+
+      :return: the ENDSTEXT value
+      :rtype: int
+      """
       return int(self._text['$ENDSTEXT'])
    @ENDSTEXT.setter
    def ENDSTEXT(self,val):
@@ -84,6 +139,13 @@ class Standard:
    """Data mode. Everything except list is deprecated"""
    @property
    def MODE(self):
+      """Get the MODE of data layout
+
+      **Setter:** assign an `char` to the keyword
+
+      :return: the MODE value
+      :rtype: char
+      """
       return self._text['$MODE']
    @MODE.setter
    def MODE(self,val):
@@ -93,6 +155,13 @@ class Standard:
    """Offset to the next data set in the file"""
    @property
    def NEXTDATA(self):
+      """Get the byte offset for NEXTDATA the next fcs data
+
+      **Setter:** assign an `int` to the keyword
+
+      :return: the NEXTDATA value
+      :rtype: int
+      """
       return int(self._text['$NEXTDATA'])
    @NEXTDATA.setter
    def NEXTDATA(self,val):
@@ -101,6 +170,13 @@ class Standard:
    """Number of parameters in an event"""
    @property
    def PAR(self):
+      """Get the number of parameters
+
+      .. warning:: You cannot set the PAR, as it is infered from the parameters present
+
+      :return: the PAR value
+      :rtype: int
+      """
       return len(self._text.parameter_data.keys())
    @PAR.setter
    def PAR(self,val):
@@ -109,6 +185,13 @@ class Standard:
    """Total number of events in the dataset"""
    @property
    def TOT(self):
+      """Get the number of events
+
+      .. warning:: You cannot set the TOT, as it is infered from the parameters present
+
+      :return: the TOT value
+      :rtype: int
+      """
       return int(self._text['$TOT'])
    @TOT.setter
    def TOT(self,val):
