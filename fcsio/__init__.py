@@ -169,9 +169,10 @@ class FCS:
       return self._data
    @property
    def other(self):
-      """access the OTHER segments (user defined fields specified at the end of the header)
+      """access the OTHER segments (user defined fields specified at the
+      end of the header)
 
-      **setter:** set the value of other with a `list` of `bytearray`s
+      **setter:** set the value of other with a `list` of `bytearray`
 
       :return: Get the data from OTHER user defined segments at the end of the header
       :rtype: list of bytearrays
@@ -190,10 +191,20 @@ class FCS:
       been intialized because data is coupled to parameters. Any changes
       is parameters will also affect data.
 
+      **setter:** reassign the parameters in any order or subset you
+      want from a list of paramters, and they will be automatically
+      indexed appropriately, and the data will be automatically reordered
+
       :return: get an object for accessing/modifying paramters
       :rtype: :class:`fcsio.text.parameters.Parameters`
+
+      .. note:: Parameters can be reassigned. The setter for parameters
+                is the easiest way to subset, remove or reorder parameters.
       """
       return Parameters(self.text,self.data)
+   @parameters.setter
+   def parameters(self,val): self.parameters.reassign([x for x in val])
+
    @property
    def standard(self):
       """access and set where possible standard TEXT fields through here.

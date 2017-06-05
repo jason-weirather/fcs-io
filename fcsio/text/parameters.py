@@ -30,18 +30,47 @@ class Parameters:
       self._text = text
       self._data = data
       #self._parameters = [Parameter(i,self._text.parameter_data) for i in range(1,int(self._text['$PAR']))]
-   @property
-   def parameters(self):
+   def _get_parameters(self):
       """ Return the list of paremeters as Parameter objects
 
       :return: parameters
       :rtype: list of :class:`fcsio.test.parameters.Parameter`
       """
-      #return [Parameter(i,self._text.parameter_data) for i in range(1,int(self._text['$PAR']))]
       return [Parameter(i,self._text.parameter_data) for i in sorted(self._text.parameter_data)]
    def __iter__(self):
-      for p in self.parameters:
+      for p in self._get_parameters():
          yield p
+
+   def reassign(self,parameters):
+      """ reassign the parameters from a list. the ordering of the list
+      will dictate the new order of parameters in the file.
+
+      :param parameters: parameters
+      :type parameters: list of :class:`fcsio.text.parameters.Parameter` or :class:`fcsio.text.parameters.Parameters`
+      """
+      input = list([x for x in parameters])
+      old2new = {}
+      new2old = {}
+      i = 0
+      for p in input:
+         i += 1
+         old2new[p.index] = i
+         new2old[i] = p.index
+      # Fix the data first
+      mat = self._data.matrix
+      #print(old2new)
+      newmat = []
+      for row in mat:
+         newmat.append([row[new2old[i]-1] for i in range(1,len(new2old.keys())+1)])
+      self._data.matrix = newmat
+      # now the data is fixed.  we must fix the parameters
+      cache = {}
+      old_keys = list(self._text.parameter_data.keys())
+      for num in old_keys:
+         cache[num] = self._text.parameter_data[num]
+         del self._text.parameter_data[num]
+      for num in new2old.keys():
+         self._text.parameter_data[num] = cache[new2old[num]]
    def indexOf(self,short_name=None):
       """Get the index in a list of parameters according to a short_name of a parameter
 
@@ -71,8 +100,8 @@ class Parameters:
       for row in self._data.matrix:
          """ drop columns that were dropped """
          filtered_matrix.append(row)
-         if len(row) < 48:
-            print(len(row))
+         #if len(row) < 48:
+         #   print(len(row))
          #print('rowlen '+str(len(new_row)))
       self._data.matrix = filtered_matrix
 

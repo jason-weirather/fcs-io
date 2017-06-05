@@ -20,10 +20,7 @@ def main(args):
    # BEGIN FILTERS
    f2 = None # will be set in the filter of choice
 
-   if args.essential:
-      f2 = fcs.filter.minimize()
-
-   elif args.event_range:
+   if args.event_range:
       f2 = fcs.filter.events(range(args.event_range[0]-1,args.event_range[1]))
 
    elif args.event_downsample_random is not None:
@@ -42,7 +39,7 @@ def main(args):
 
    # END FILTERS
 
-   of.write(f2.output_constructor(args.strip==True).fcs_bytes)
+   of.write(f2.output_constructor().fcs_bytes)
    of.close()
    return
 
@@ -52,11 +49,9 @@ def do_inputs():
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
    parser.add_argument('input',help="Input FCS file or '-' for STDIN '.gz' files will be automatically processed by gzip")
    parser.add_argument('-o','--output',help="Output FCS file or STDOUT if not set")
-   parser.add_argument('--strip',action='store_true',help="strip away OTHER data segments from the object")
    group1 = parser.add_mutually_exclusive_group()
-   parser.add_argument('--essential',action='store_true',help="Only output required fields.  Exclude OTHER fields.")
-   group1.add_argument('--event_range',nargs=2,type=int,help="get events (cells) in this range (1 indexed)")
-   group1.add_argument('--event_downsample_random',type=int,help="number of cells to randomly draw")
+   group1.add_argument('--event_range',nargs=2,type=int,metavar=('start','end'),help="get events (cells) in this range (1 indexed)")
+   group1.add_argument('--event_downsample_random',type=int,metavar=('count'),help="number of cells to randomly draw")
    group1.add_argument('--gate',metavar='short_name',help="gate on short name. use min and max to define range")
    parser.add_argument('--min',type=float,help="Remove events less than this number")
    parser.add_argument('--max',type=float,help="Remove events greater than this")

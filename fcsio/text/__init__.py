@@ -264,5 +264,5 @@ class Text(KeyWordDict):
       return bytes(ostr.encode('utf-8'))
 
    def __str__(self):
-      print(self.bytes)
+      #print(self.bytes)
       return str(self.bytes)

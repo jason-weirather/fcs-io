@@ -13,18 +13,117 @@ Welcome to fcs-io's documentation!
 Command line interface
 ======================
 
+`fcs-io`
+++++++++
+
+**Access sub-commands for working with FCS files**
+
+This command will always need to be followed by an operation command.
+If the operation is missing, a list of available options
+will be provided.
+
+.. code-block:: bash
+
+   $ fcs-io -h
+
+.. program-output:: fcs-io -h
+
 .. automodule:: fcsio.cli
 
-describe
-++++++++
+`cat`
+----------
+**Concatonate events of FCS files**
+
+.. code-block:: bash
+
+   $ fcs-io cat -h
+
+.. program-output:: fcs-io cat -h
+
+.. automodule:: fcsio.cli.utilities.cat
+
+`describe`
+----------
+**Summary of FCS file contents**
+
+.. code-block:: bash
+
+   $ fcs-io describe -h
+
+.. program-output:: fcs-io describe -h
+
 .. automodule:: fcsio.cli.utilities.describe
 
-filter
-++++++
+`enumerate`
+----------
+**Add an enumeration channel to the paremeters**
+
+.. code-block:: bash
+
+   $ fcs-io enumerate -h
+
+.. program-output:: fcs-io enumerate -h
+
+.. automodule:: fcsio.cli.utilities.enumerate
+
+`filter`
+--------
+**Remove events based on filtering criteria**
+
+.. code-block:: bash
+
+   $ fcs-io filter -h
+
+.. program-output:: fcs-io filter -h
+
 .. automodule:: fcsio.cli.utilities.filter
 
-view
-++++
+`reorder`
+--------
+**Reorder parameters**
+
+.. code-block:: bash
+
+   $ fcs-io reorder -h
+
+.. program-output:: fcs-io reorder -h
+
+.. automodule:: fcsio.cli.utilities.reorder
+
+`rm`
+--------
+**Remove parameters**
+
+.. code-block:: bash
+
+   $ fcs-io rm -h
+
+.. program-output:: fcs-io rm -h
+
+.. automodule:: fcsio.cli.utilities.rm
+
+`strip`
+-------
+**Trim keywords and data segments from a file (but not whole parameters)**
+
+.. code-block:: bash
+
+   $ fcs-io strip -h
+
+.. program-output:: fcs-io strip -h
+
+.. automodule:: fcsio.cli.utilities.strip
+
+`view`
+------
+**View the data from an fcs file**
+
+.. code-block:: bash
+
+   $ fcs-io view -h
+
+.. program-output:: fcs-io view -h
+
 .. automodule:: fcsio.cli.utilities.view
 
 Modules
