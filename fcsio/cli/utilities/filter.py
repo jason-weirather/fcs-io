@@ -39,7 +39,7 @@ def do_inputs():
 def external_cmd(cmd):
    """function for calling program by command through a function"""
    cache_argv = sys.argv
-   sys.argv = cmd.split()
+   sys.argv = cmd
    args = do_inputs()
    main(args)
    sys.argv = cache_argv

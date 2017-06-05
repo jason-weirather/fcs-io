@@ -19,7 +19,7 @@ def main():
    """Now import modules accordingly"""
    task_module = import_module('fcsio.cli.utilities.'+args.task)
    """Launch the module with its commands"""
-   task_module.external_cmd(" ".join(back_end_args))
+   task_module.external_cmd(back_end_args)
 
 def do_args():
    """get the list of possible utilities"""
