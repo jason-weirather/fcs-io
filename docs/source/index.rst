@@ -10,8 +10,29 @@ Welcome to fcs-io's documentation!
    :maxdepth: 2
    :caption: Contents:
 
-Module
-------
+Command line interface
+======================
+
+.. automodule:: fcsio.cli
+
+describe
+++++++++
+.. automodule:: fcsio.cli.utilities.describe
+
+filter
+++++++
+.. automodule:: fcsio.cli.utilities.filter
+
+downsample
+++++++++++
+.. automodule:: fcsio.cli.utilities.downsample
+
+view
+++++
+.. automodule:: fcsio.cli.utilities.view
+
+Modules
+=======
 
 FCS
 +++
