@@ -43,8 +43,8 @@ FCS
     :inherited-members:
     :show-inheritance:
 
-HEADER data
-+++++++++++++++++++++++++++++++++++++++++++++
+HEADER
+++++++
 .. automodule:: fcsio.header
     :members:
     :undoc-members:
