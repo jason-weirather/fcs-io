@@ -23,10 +23,6 @@ filter
 ++++++
 .. automodule:: fcsio.cli.utilities.filter
 
-downsample
-++++++++++
-.. automodule:: fcsio.cli.utilities.downsample
-
 view
 ++++
 .. automodule:: fcsio.cli.utilities.view

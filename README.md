@@ -1,5 +1,5 @@
 # fcs-io
-FCS file handling **(pythonic flavor)**
+FCS file handling 
 
 *Lets slice and dice FCS files like pros.*
 

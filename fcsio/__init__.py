@@ -171,10 +171,16 @@ class FCS:
    def other(self):
       """access the OTHER segments (user defined fields specified at the end of the header)
 
+      **setter:** set the value of other with a `list` of `bytearray`s
+
       :return: Get the data from OTHER user defined segments at the end of the header
       :rtype: list of bytearrays
       """
       return self._other
+   @other.setter
+   def other(self, val):
+      self._other = val
+
    @property
    def parameters(self):
       """access to parameters. These are originally defined in keywords but
