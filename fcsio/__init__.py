@@ -1,4 +1,4 @@
-import struct, re
+import struct, re, sys
 from io import BytesIO
 from math import ceil
 from fcsio.header import Header
@@ -248,7 +248,7 @@ class FCSFactory:
          for p in fcs.parameters:
             i = p.index
             mat = fcs.data.matrix
-            p.range = ceil(max([row[i] for row in mat]))
+            p.range = ceil(max([row[i-1] for row in mat]))
 
       #header is reconstructed
       basic_header_length = 58
@@ -365,7 +365,7 @@ class FCSFactory:
       :return: the bytes in the DATA segment
       :rtype: bytearray
       """
-      return self._header_bytes
+      return self._data_bytes
 
    @property
    def text_bytes(self):

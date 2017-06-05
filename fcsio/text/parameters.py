@@ -179,7 +179,7 @@ class Parameter:
       return int(self._pdata[self._i]['$PnR'])
    @range.setter
    def range(self,val):
-      self._pdata['$PnR'] = str(val)
+      self._pdata[self._i]['$PnR'] = str(val)
 
    # begin optional values
    @property
@@ -200,7 +200,7 @@ class Parameter:
       return (float(m.group(1)),float(m.group(2)))
    @calibration.setter
    def calibration(self,tup):
-      self._pdata['$PnCALIBRATION'] = str(tup[0])+','+tup[1]
+      self._pdata[self._i]['$PnCALIBRATION'] = str(tup[0])+','+tup[1]
    @property
    def visualization_scale(self):
       """$PnD short name attribute for this parameter

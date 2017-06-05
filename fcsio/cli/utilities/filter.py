@@ -18,10 +18,10 @@ def main(args):
 
    if args.strip:
       f2 = fcs.filter.minimize()
-      of.write(f2.construct_fcs().fcs_bytes)
+      of.write(f2.output_constructor().fcs_bytes)
       of.close()
       return
-   of.write(fcs.filter.none().construct_fcs().fcs_bytes)
+   of.write(fcs.filter.none().output_constructor().fcs_bytes)
    of.close()
    return
 

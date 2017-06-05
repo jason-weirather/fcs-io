@@ -20,7 +20,7 @@ def main(args):
    do_essential = args.essential==True
    if args.range is not None:
       f2 = fcs.filter.events(range(args.range[0]-1,args.range[1]))
-      of.write(f2.construct_fcs(do_essential).fcs_bytes)
+      of.write(f2.output_constructor(do_essential).fcs_bytes)
       of.close()
       return
    if args.random is not None:
@@ -28,7 +28,7 @@ def main(args):
       random.shuffle(rset)
       rset = sorted(rset[0:args.random])
       f2 = fcs.filter.events(rset)
-      of.write(f2.construct_fcs(do_essential).fcs_bytes)
+      of.write(f2.output_constructor(do_essential).fcs_bytes)
       of.close()
       return
 
