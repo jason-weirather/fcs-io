@@ -78,6 +78,18 @@ will be provided.
 
 .. automodule:: fcsio.cli.utilities.filter
 
+`other`
+--------
+**Extract OTHER user defined fields**
+
+.. code-block:: bash
+
+   $ fcs-io other -h
+
+.. program-output:: fcs-io other -h
+
+.. automodule:: fcsio.cli.utilities.other
+
 `reorder`
 --------
 **Reorder parameters**
