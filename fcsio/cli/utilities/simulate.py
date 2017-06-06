@@ -4,40 +4,52 @@ import argparse, sys, gzip, re, io, random
 from fcsio import FCS
 from fcsio import FCSOptions
 
-def main(args):
+def _main(args):
    """setup input and output handles"""
    of = sys.stdout.buffer
    if args.output:
       if args.output[-3:] == '.gz': of = gzip.open(args.output,'wb')
       else: of = open(args.output,'wb')
+   of.write(simulate(args.number_of_events,args.channels))
+   of.close()
+   return
 
 
+def simulate(number_of_events=10000,channels=5):
+   """Take number of events and channels as inputs and
+   output the FCS file bytes
+
+   :param number_of_events: number of events
+   :param channels: number of channels
+   :type number_of_events: int
+   :type channels: int
+   :return: FCS file data
+   :rtype: bytearray
+   """
    fcs = FCS(fcs_options=FCSOptions())
    fcs.parameters.add('Time')
    fcs.parameters.add('Event_Length',index=1)
-   for i in range(0,args.channels):
+   for i in range(0,channels):
       fcs.parameters.add('Sim_'+str(i+1),index=len(fcs.parameters))
 
    mat = fcs.data.matrix
    numbers = []
-   tarr = [i+1 for i in range(0,args.number_of_events)]
+   tarr = [i+1 for i in range(0,number_of_events)]
    numbers.append(tarr)
-   larr = [random.gauss(50,10) for i in range(0,args.number_of_events)]
+   larr = [random.gauss(50,10) for i in range(0,number_of_events)]
    numbers.append(larr)
-   for i in range(0,args.channels):
-      c = [random.gauss(50,10) if random.random() < 0.2 else random.gauss(80,20) for i in range(0,args.number_of_events)]
+   for i in range(0,channels):
+      c = [random.gauss(50,10) if random.random() < 0.2 else random.gauss(80,20) for i in range(0,number_of_events)]
       c = [0 if x < 0 else x for x in c]
       numbers.append(c)
-   for i in range(0,args.number_of_events):
+   for i in range(0,number_of_events):
       mat.append([0 for i in range(0,len(fcs.parameters))])
       # put in our data
       for j in range(0,len(numbers)): mat[-1][j] = numbers[j][i]
       #mat[-1][0] = i+1
       #mat[-1][1] = larr[i]
    fcs.data.matrix = mat
-   of.write(fcs.output_constructor().fcs_bytes)
-   of.close()
-   return
+   return fcs.output_constructor().fcs_bytes
 
 def do_inputs():
    parser = argparse.ArgumentParser(
@@ -50,9 +62,13 @@ def do_inputs():
    return args
 
 def external_cmd(cmd):
-   """function for calling program by command through a function"""
+   """function for calling program by command through a function
+
+   :param cmd: the command broken apart as a list
+   :type cmd: list
+   """
    cache_argv = sys.argv
    sys.argv = cmd
    args = do_inputs()
-   main(args)
+   _main(args)
    sys.argv = cache_argv

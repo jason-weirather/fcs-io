@@ -200,6 +200,14 @@ DATA segment
     :inherited-members:
     :show-inheritance:
 
+simulate data
++++++++++++++
+.. automodule:: fcsio.cli.utilities.simulate
+    :members:
+    :undoc-members:
+    :inherited-members:
+    :show-inheritance:
+
 Indices and tables
 ==================
 
