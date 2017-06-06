@@ -1,7 +1,7 @@
 # fcs-io
 FCS file handling 
 
-Vist [The manual](../blob/master/fcs-io.pdf)
+[The manual](../master/fcs-io.pdf)
 
 *Lets slice and dice FCS files like pros.*
 
