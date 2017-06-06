@@ -1,3 +1,4 @@
+import math
 import re, sys, json
 
 _param = {'B':'Number of bits reserved for parameters n',
@@ -41,6 +42,34 @@ class Parameters:
       for p in self._get_parameters():
          yield p
 
+   def add(self,short_name,index=0,amplification_type=(0,0),default=0):
+      """Add a parameter to the fcs.
+
+      :param short_name: short name
+      :param amplification_type: amplification type (optional)
+      :param default: initialize the data to this
+      :type short_name: string
+      :type amplification_type: tuple(float,float)
+      :type default: float
+      """
+      # start by appending it
+      ks = sorted(list(self._text.parameter_data.keys()))
+      last = ks[-1]+1
+      self._text.parameter_data[last] = {
+         '$PnB':'32',
+         '$PnE':','.join([str(x) for x in amplification_type]),
+         '$PnN':short_name,
+         '$PnR':str(int(math.ceil(default)))
+      }
+      # now set the data
+      mat = self._data.matrix
+      for row in mat: row.append(float(default))
+      self._data.matrix = mat
+      # now we can reorder to put last in index
+      ks.insert(index,last)
+      params = self._get_parameters()
+      self.reassign([params[i-1] for i in ks])
+
    def reassign(self,parameters):
       """ reassign the parameters from a list. the ordering of the list
       will dictate the new order of parameters in the file.
@@ -76,11 +105,11 @@ class Parameters:
 
       :param short_name: the PnN short name
       :type short_name: string
-      :return: get he index of the short name
+      :return: get he index of the short name (index-0)
       :rtype: int
       """
       if short_name is not None:
-         return [x.short_name for x in self.parameters].index(short_name)
+         return [x.short_name for x in self._get_parameters()].index(short_name)
       return None
    def delete(self,short_names=[]):
       """Remove a list of parameters defined by the list of short names

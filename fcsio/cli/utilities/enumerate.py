@@ -1,4 +1,4 @@
-""" Read the OTHER user defined segments from a file """
+""" Add a parameter to enumerate data """
 
 import argparse, sys, gzip, re, io
 from fcsio import FCS
@@ -16,22 +16,33 @@ def main(args):
       else: of = open(args.output,'wb')
    inf.close() # read the bytes and close inputs
 
-   if len(fcs.other)==0:
-      raise ValueError("Index for OTHER segment is out of range.  No other segment exists.")
-   if args.segment_number > len(fcs.other):
-      raise ValueError("Index for segment number is out of range, please choose an OTHER segement between (and including) 1 and "+str(len(fcs.other)))
-   of.write(fcs.other[args.segment_number-1])
+   fcs.parameters.add(args.short_name,index=args.index)
+
+   j = fcs.parameters.indexOf(args.short_name)
+   mat = fcs.data.matrix
+   i = 0
+   for row in mat:
+      i += 1
+      if args.label is not None:
+         row[j] = args.label
+      elif args.auto_number:
+         row[j] = i
+   of.write(fcs.output_constructor().fcs_bytes)
 
    of.close()
    return
 
 def do_inputs():
    parser = argparse.ArgumentParser(
-            description = "Access user-defined OTHER data from an fcs file",
+            description = "Add a parameter to enumerate the data",
             formatter_class=argparse.ArgumentDefaultsHelpFormatter)
    parser.add_argument('input',help="Input FCS file or '-' for STDIN '.gz' files will be automatically processed by gzip")
    parser.add_argument('-o','--output',help="Output FCS file or STDOUT if not set")
-   parser.add_argument('-n','--segment_number',type=int,required=True,help="Segment number (starting at 1)")
+   parser.add_argument('-n','--short_name',required=True,help="The short name to give this")
+   parser.add_argument('-i','--index',type=int,default=0,help="index to add the enumeration 0-before first to N, after the Nth parameter")
+   group = parser.add_mutually_exclusive_group()
+   group.add_argument('-a','--auto_number',action='store_true',help="The default is to auto_number")
+   group.add_argument('--label',type=float,help="add a numeric label")
    args = parser.parse_args()
    return args
 
