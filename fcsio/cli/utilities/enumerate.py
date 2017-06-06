@@ -16,6 +16,9 @@ def main(args):
       else: of = open(args.output,'wb')
    inf.close() # read the bytes and close inputs
 
+   if args.short_name in [x.short_name for x in fcs.parameters]:
+      raise ValueError("you cant add duplicate short names: "+args.short_name)
+
    fcs.parameters.add(args.short_name,index=args.index)
 
    j = fcs.parameters.indexOf(args.short_name)
