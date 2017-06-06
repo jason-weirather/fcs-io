@@ -31,6 +31,8 @@ class Parameters:
       self._text = text
       self._data = data
       #self._parameters = [Parameter(i,self._text.parameter_data) for i in range(1,int(self._text['$PAR']))]
+   def __len__(self):
+      return len(self._get_parameters())
    def _get_parameters(self):
       """ Return the list of paremeters as Parameter objects
 
@@ -54,7 +56,9 @@ class Parameters:
       """
       # start by appending it
       ks = sorted(list(self._text.parameter_data.keys()))
-      last = ks[-1]+1
+      last = 1
+      if len(ks) > 0:
+         last = ks[-1]+1
       self._text.parameter_data[last] = {
          '$PnB':'32',
          '$PnE':','.join([str(x) for x in amplification_type]),

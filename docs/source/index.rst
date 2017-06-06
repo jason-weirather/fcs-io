@@ -31,7 +31,7 @@ will be provided.
 .. automodule:: fcsio.cli
 
 `cat`
-----------
+-----
 **Concatonate events of FCS files**
 
 .. code-block:: bash
@@ -55,7 +55,7 @@ will be provided.
 .. automodule:: fcsio.cli.utilities.describe
 
 `enumerate`
-----------
+-----------
 **Add an enumeration channel to the paremeters**
 
 .. code-block:: bash
@@ -91,7 +91,7 @@ will be provided.
 .. automodule:: fcsio.cli.utilities.other
 
 `reorder`
---------
+---------
 **Reorder parameters**
 
 .. code-block:: bash
@@ -113,6 +113,18 @@ will be provided.
 .. program-output:: fcs-io rm -h
 
 .. automodule:: fcsio.cli.utilities.rm
+
+`simulate`
+----------
+**Create a new FCS file from nothing with simulated data**
+
+.. code-block:: bash
+
+   $ fcs-io simulate -h
+
+.. program-output:: fcs-io simulate -h
+
+.. automodule:: fcsio.cli.utilities.simulate
 
 `strip`
 -------

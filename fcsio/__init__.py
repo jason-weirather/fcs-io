@@ -1,6 +1,7 @@
 import struct, re, sys
 from io import BytesIO
 from math import ceil
+from collections import namedtuple
 from fcsio.header import Header
 from fcsio.text import Text
 from fcsio.data import Data
@@ -26,15 +27,35 @@ class FCS:
 
     You must specify either bytes or fcs.  not both.
     """
-   def __init__(self,bytes=None,fcs=None):
+   def __init__(self,bytes=None,fcs=None,fcs_options=None):
       self._version = None
       self._data = None
       self._text = None
       self._supplementary_text = None
       self._analysis = None
       self._other = [] # added advantage of passing by reference when doing a copy
+      if len([x for x in [bytes,fcs,fcs_options] if x is not None]) != 1:
+         raise ValueError('Please only set FCS from one type')
       if bytes: self._set_from_bytes(bytes)
       if fcs: self._set_from_fcs(fcs)
+      if fcs_options: self._set_from_fcs_options(fcs_options)
+
+   def _set_from_fcs_options(self,fcs_options):
+      self._version = fcs_options.version
+      self._other = []
+      self._text = Text(b'')
+      self._text['$BEGINANALYSIS'] = 0
+      self._text['$BEGINDATA'] = 0
+      self._text['$BEGINSTEXT'] = 0
+      self._text['$BYTEORD'] = fcs_options.byteord
+      self._text['$DATATYPE'] = fcs_options.datatype
+      self._text['$ENDANALYSIS'] = 0
+      self._text['$ENDDATA'] = 0
+      self._text['$ENDSTEXT'] = 0
+      self._text['$MODE'] = fcs_options.mode
+      self._text['$NEXTDATA'] = 0
+      self._text['$TOT'] = 0
+      self._data = Data(b'',self.standard,self._text)
 
    def _set_from_bytes(self,bytes):
       """ Set the FCS file according to raw data """
@@ -265,7 +286,8 @@ class FCSFactory:
          for p in fcs.parameters:
             i = p.index
             mat = fcs.data.matrix
-            p.range = ceil(max([row[i-1] for row in mat]))
+            if len(mat) == 0: p.range = 1 # no data, so just default to one
+            else: p.range = ceil(max([row[i-1] for row in mat]))
 
       #header is reconstructed
       basic_header_length = 58
@@ -418,3 +440,18 @@ class FCSFactory:
    def __str__(self):
       """Just print the header with spaces replaced with astrix characters"""
       return self.header_bytes.decode('ascii').replace(' ','*')
+
+class FCSOptions:
+   """Options for creating an empty FCS file. Now, only
+   outputs a list mode little endian FCS 3.1 file.
+   """
+   def __init__(self):
+      return
+   @property
+   def version(self): return "FCS3.1"
+   @property
+   def mode(self): return 'L'
+   @property
+   def byteord(self): return '1,2,3,4'
+   @property
+   def datatype(self): return 'F'
