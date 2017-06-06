@@ -9,6 +9,21 @@ from fcsio.text.parameters import Parameters
 from fcsio.text.standard import Standard
 from fcsio.filter import Filter
 
+class FCSOptions:
+   """Options for creating an empty FCS file. Now, only
+   outputs a list mode little endian FCS 3.1 file.
+   """
+   def __init__(self):
+      return
+   @property
+   def version(self): return "FCS3.1"
+   @property
+   def mode(self): return 'L'
+   @property
+   def byteord(self): return '1,2,3,4'
+   @property
+   def datatype(self): return 'F'
+
 class FCS:
    """The primary class for working with FCS file data is the FCS class.
 
@@ -22,8 +37,10 @@ class FCS:
 
    :param bytes: The raw data of the FCS file
    :param fcs: :class:`fcsio.FCS` object to create a new FCS from. Used by copy.
+   :param fcs_options: :class:`fcsio.FCSOptions` Create a new FCS object without any other inputs, but requires initializaiton with FCSOptions
    :type bytes: bytearray
    :type fcs: fcsio.FCS
+   :type fcs_options: fcsio.FCSOptions
 
     You must specify either bytes or fcs.  not both.
     """
@@ -441,17 +458,3 @@ class FCSFactory:
       """Just print the header with spaces replaced with astrix characters"""
       return self.header_bytes.decode('ascii').replace(' ','*')
 
-class FCSOptions:
-   """Options for creating an empty FCS file. Now, only
-   outputs a list mode little endian FCS 3.1 file.
-   """
-   def __init__(self):
-      return
-   @property
-   def version(self): return "FCS3.1"
-   @property
-   def mode(self): return 'L'
-   @property
-   def byteord(self): return '1,2,3,4'
-   @property
-   def datatype(self): return 'F'

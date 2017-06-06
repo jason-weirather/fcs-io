@@ -132,7 +132,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'fcs-io.tex', 'fcs-io Documentation',
-     'Jason L. Weirather', 'manual'),
+     'Jason L. Weirather, Daniel Gusenleitner', 'manual'),
 ]
 
 
