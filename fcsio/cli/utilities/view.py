@@ -16,7 +16,7 @@ def main(args):
       else: of = open(args.output,'wb')
    inf.close() # read the bytes and close inputs
 
-   if args.r or args.R:
+   if not args.no_header:
       of.write("\t".join([x.short_name for x in fcs.parameters])+"\n")
    if args.R:
       of.close()
@@ -37,7 +37,7 @@ def do_inputs():
    parser.add_argument('-o','--output',help="Output FCS file or STDOUT if not set")
    parser.add_argument('-s','--simple',action='store_const',const=2,help="decimal places in float")
    group1 = parser.add_mutually_exclusive_group()
-   group1.add_argument('-r',action='store_true',help="Include the header in the output")
+   group1.add_argument('--no_header',action='store_true',help="Exclude the header in the output")
    group1.add_argument('-R',action='store_true',help="Only output the header")
    args = parser.parse_args()
    return args

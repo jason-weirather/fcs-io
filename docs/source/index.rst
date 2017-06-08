@@ -138,6 +138,18 @@ will be provided.
 
 .. automodule:: fcsio.cli.utilities.strip
 
+`tsv2fcs`
+---------
+**Convert a TSV file of parameter columns and event rows to an FCS**
+
+.. code-block:: bash
+
+   $ fcs-io tsv2fcs -h
+
+.. program-output:: fcs-io tsv2fcs -h
+
+.. automodule:: fcsio.cli.utilities.tsv2fcs
+
 `view`
 ------
 **View the data from an fcs file**
