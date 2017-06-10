@@ -214,7 +214,7 @@ DATA segment
 
 simulate data
 +++++++++++++
-.. automodule:: fcsio.cli.utilities.simulate
+.. automodule:: fcsio.simulate
     :members:
     :undoc-members:
     :inherited-members:
