@@ -1,7 +1,8 @@
 import fcsio
-import re
+import re, struct
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
+from io import BytesIO
 
 class FCS(fcsio.FCS):
    """Extend the FCS class for CyTOF specific features"""
@@ -31,7 +32,22 @@ class CyTOFOther:
    @property
    def fcsheaderschema(self):
       return FCSHeaderSchema(self._xml)
-
+   @property
+   def matrix(self):
+      schema = self.fcsheaderschema
+      mat = []
+      l = len(schema.data['SegmentColumns'])
+      b = BytesIO(self._raw)
+      i = 0
+      while b:
+         i+=1
+         #if i%1000000==0: print(b.tell())
+         row_bytes = b.read(4*l)
+         if len(row_bytes)==0: break
+         vals = struct.unpack('<'+str(l)+'f',b.read(4*l))
+         mat.append(list(vals))
+         #print((i,b.tell(),len(self._raw)))
+      return mat
 class FCSHeaderSchema:
    """This is the xml that contains a lot of nice meta data"""
    def __init__(self,xml):
@@ -50,5 +66,13 @@ class FCSHeaderSchema:
    def __str__(self):
       ostr = ''
       for category in self._data:
-         ostr += '# '+category+"\n"
+         ostr += '# '+category
+         if len(self._data[category]) > 1: ostr += " - ("+str(len(self._data[category]))+" entries)\n"
+         else: ostr += "\n"
+         for i,e in enumerate(self._data[category]):
+           keys = e.keys()
+           ostr += str(i+1)+". "+str(len(keys))+" attributes\n"
+           for k in keys:
+              ostr += "   "+str(k)+" \t"+str(e[k])+"\n"
       return ostr
+
