@@ -90,6 +90,18 @@ will be provided.
 
 .. automodule:: fcsio.cli.utilities.other
 
+`parameters`
+------------
+**Write a table of parameter information**
+
+.. code-block:: bash
+
+   $ fcs-io parameters -h
+
+.. program-output:: fcs-io parameters -h
+
+.. automodule:: fcsio.cli.utilities.parameters
+
 `reorder`
 ---------
 **Reorder parameters**

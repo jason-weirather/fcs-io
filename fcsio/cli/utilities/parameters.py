@@ -1,4 +1,9 @@
-""" Access metadata on parameters from an fcs file """
+""" Access metadata on parameters from an fcs file 
+
+Always starts with the short name ($PnN) parameter
+that are the same column headers as the view command gives
+
+"""
 
 import argparse, sys, gzip, re, io, functools
 from fcsio import FCS
