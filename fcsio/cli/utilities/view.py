@@ -12,8 +12,8 @@ def main(args):
    fcs = FCS(inf.read())
    of = sys.stdout
    if args.output:
-      if args.output[-3:] == '.gz': of = gzip.open(args.output,'wb')
-      else: of = open(args.output,'wb')
+      if args.output[-3:] == '.gz': of = gzip.open(args.output,'w')
+      else: of = open(args.output,'w')
    inf.close() # read the bytes and close inputs
 
    if not args.no_header:
